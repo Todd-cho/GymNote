@@ -139,7 +139,7 @@ input {
   color: var(--ink);
   padding: 10px 12px;
   min-height: 40px;
-  font-size: 13px;
+  font-size: 16px;
 }
 
 .routine-form {
@@ -492,6 +492,13 @@ input {
   gap: 16px;
 }
 
+.set-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
 .set-section h4 {
   display: inline-flex;
   width: fit-content;
@@ -499,6 +506,14 @@ input {
   background: #f4f8f5;
   color: #2d3b32;
   padding: 8px 13px;
+}
+
+.set-heading p {
+  color: var(--soft);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.35;
+  text-align: right;
 }
 
 .previous-row {
@@ -544,8 +559,13 @@ input {
   min-width: 0;
   height: 42px;
   text-align: center;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 700;
+}
+
+.set-row input::placeholder {
+  color: #c6ccc8;
+  opacity: 1;
 }
 
 .set-row.completed input {
@@ -794,5 +814,13 @@ dialog label {
 
   h3 {
     font-size: 15px;
+  }
+
+  .set-heading {
+    align-items: flex-start;
+  }
+
+  .set-heading p {
+    max-width: 150px;
   }
 }

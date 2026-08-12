@@ -16,11 +16,19 @@ const defaultExercises = {
 };
 
 const defaultPrescription = [
-  { id: crypto.randomUUID(), type: "warmup", rir: "6 RIR", weight: "47.1", reps: "6", completed: false },
-  { id: crypto.randomUUID(), type: "warmup", rir: "5 RIR", weight: "49.1", reps: "5", completed: false },
-  { id: crypto.randomUUID(), type: "top", rir: "1 RIR", weight: "54.3", reps: "4-7", completed: false },
-  { id: crypto.randomUUID(), type: "working", rir: "1 RIR", weight: "55", reps: "5-6", completed: false },
-  { id: crypto.randomUUID(), type: "working", rir: "1 RIR", weight: "45", reps: "8-9", completed: false },
+  { type: "warmup", rir: "6 RIR", weight: "", reps: "", completed: false },
+  { type: "warmup", rir: "5 RIR", weight: "", reps: "", completed: false },
+  { type: "top", rir: "1 RIR", weight: "", reps: "", completed: false },
+  { type: "working", rir: "1 RIR", weight: "", reps: "", completed: false },
+  { type: "working", rir: "1 RIR", weight: "", reps: "", completed: false },
+];
+
+const legacyDefaultSets = [
+  ["47.1", "6"],
+  ["49.1", "5"],
+  ["54.3", "4-7"],
+  ["55", "5-6"],
+  ["45", "8-9"],
 ];
 
 const state = {
@@ -95,31 +103,11 @@ function loadData() {
     return normalizeData(JSON.parse(saved));
   }
 
-  const routineId = crypto.randomUUID();
   return {
-    selectedRoutineId: routineId,
-    routines: [
-      {
-        id: routineId,
-        title: "Day 1a",
-        createdAt: new Date().toISOString(),
-        exerciseItems: defaultRoutineItems(),
-      },
-    ],
+    selectedRoutineId: null,
+    routines: [],
     exercises: defaultExercises,
-    logs: [
-      {
-        id: crypto.randomUUID(),
-        routineId,
-        routineTitle: "Day 1a",
-        category: "가슴",
-        exercise: "인클라인 스미스 머신 벤치 프레스",
-        weight: 50,
-        reps: 8,
-        date: toDateInputValue(addDays(new Date(), -7)),
-        createdAt: addDays(new Date(), -7).toISOString(),
-      },
-    ],
+    logs: [],
     activeSets: {},
   };
 }
@@ -141,6 +129,10 @@ function bindEvents() {
     if (!title) return;
     const routine = { id: crypto.randomUUID(), title, createdAt: new Date().toISOString(), exerciseItems: [] };
     state.data.routines.unshift(routine);
+    if (!state.activeRoutineId) {
+      state.activeRoutineId = routine.id;
+      state.data.selectedRoutineId = routine.id;
+    }
     state.editingRoutineId = routine.id;
     state.activeCategory = "어깨";
     els.routineTitle.value = "";
@@ -328,9 +320,12 @@ function renderAll() {
 
 function renderHome() {
   const routine = getActiveRoutine();
-  els.routineName.textContent = routine?.title ?? "Day 1a";
+  els.routineName.textContent = routine?.title ?? "루틴 없음";
   const items = routine?.exerciseItems ?? [];
-  els.todayRoutineSummary.textContent = items.length
+  els.finishWorkoutButton.classList.toggle("hidden", !routine);
+  els.todayRoutineSummary.textContent = !routine
+    ? "루틴 탭에서 오늘 할 루틴을 먼저 만들어주세요."
+    : items.length
     ? `${items.length}개 종목으로 오늘 운동을 시작합니다.`
     : "루틴 탭에서 이 루틴에 운동 종목을 추가하세요.";
 
@@ -349,17 +344,18 @@ function renderHome() {
       `;
         })
         .join("")
-    : `<div class="empty-list">아직 이 루틴에 담긴 운동이 없습니다.</div>`;
+    : `<div class="empty-list">${routine ? "아직 이 루틴에 담긴 운동이 없습니다." : "아직 만든 루틴이 없습니다."}</div>`;
 }
 
 function renderRoutines() {
   els.routineList.classList.toggle("hidden", Boolean(state.editingRoutineId));
   els.routineEditor.classList.toggle("hidden", !state.editingRoutineId);
-  els.routineList.innerHTML = state.data.routines
-    .map((routine) => {
-      const isActive = routine.id === state.activeRoutineId;
-      const itemCount = routine.exerciseItems?.length ?? 0;
-      return `
+  els.routineList.innerHTML = state.data.routines.length
+    ? state.data.routines
+        .map((routine) => {
+          const isActive = routine.id === state.activeRoutineId;
+          const itemCount = routine.exerciseItems?.length ?? 0;
+          return `
         <article class="routine-card${isActive ? " active" : ""}" data-routine-card="${routine.id}">
           <span>
             <strong>${escapeHtml(routine.title)}</strong>
@@ -372,8 +368,9 @@ function renderRoutines() {
           </span>
         </article>
       `;
-    })
-    .join("");
+        })
+        .join("")
+    : `<div class="empty-list">아직 만든 루틴이 없습니다. 위에서 루틴 제목을 적고 추가해보세요.</div>`;
   if (state.editingRoutineId) renderRoutineEditor();
 }
 
@@ -386,7 +383,16 @@ function renderDetail() {
   if (!activeItem) {
     activeItem = firstItem;
   }
-  if (!activeItem) return;
+  if (!activeItem) {
+    els.detailRoutineName.textContent = routine?.title ?? "루틴 없음";
+    els.detailExerciseName.textContent = "운동 없음";
+    els.completionPill.textContent = "0/0 완료";
+    els.previousTopSet.innerHTML = "지난주 탑 세트 <strong>기록 없음</strong>";
+    renderSetGroup(els.warmupSetList, [], "warmup");
+    renderSetGroup(els.topSetList, [], "top");
+    renderSetGroup(els.workingSetList, [], "working");
+    return;
+  }
   state.selectedExercise = activeItem.exercise;
   state.activeCategory = activeItem.category;
 
@@ -402,19 +408,20 @@ function renderDetail() {
     ? `지난주 탑 세트 <span>중량 <strong>${previous.weight}kg</strong></span><span>횟수 <strong>${previous.reps}회</strong></span>`
     : "지난주 탑 세트 <strong>기록 없음</strong>";
 
-  renderSetGroup(els.warmupSetList, sets.filter((set) => set.type === "warmup"));
-  renderSetGroup(els.topSetList, sets.filter((set) => set.type === "top"));
-  renderSetGroup(els.workingSetList, sets.filter((set) => set.type === "working"));
+  renderSetGroup(els.warmupSetList, sets.filter((set) => set.type === "warmup"), "warmup");
+  renderSetGroup(els.topSetList, sets.filter((set) => set.type === "top"), "top");
+  renderSetGroup(els.workingSetList, sets.filter((set) => set.type === "working"), "working");
 }
 
-function renderSetGroup(container, sets) {
+function renderSetGroup(container, sets, type) {
+  const repsPlaceholder = type === "warmup" ? "8-10" : type === "working" ? "10-12" : "";
   container.innerHTML = sets
     .map(
       (set) => `
         <div class="set-row${set.completed ? " completed" : ""}" data-set-id="${set.id}">
           <span class="rir">${escapeHtml(set.rir)}</span>
-          <input data-field="weight" inputmode="decimal" value="${escapeAttr(set.weight)}" placeholder="0" />
-          <input data-field="reps" inputmode="numeric" value="${escapeAttr(set.reps)}" placeholder="0" />
+          <input data-field="weight" inputmode="decimal" value="${escapeAttr(set.weight)}" placeholder="" />
+          <input data-field="reps" inputmode="numeric" value="${escapeAttr(set.reps)}" placeholder="${repsPlaceholder}" />
           <button class="check-button" data-check="${set.id}" type="button" aria-label="세트 완료">✓</button>
         </div>
       `,
@@ -435,32 +442,47 @@ function updateSetFromInput(event) {
 function handleSetClick(event) {
   const button = event.target.closest("button[data-check]");
   if (!button) return;
-  const set = getCurrentSets().find((item) => item.id === button.dataset.check);
+  const sets = getCurrentSets();
+  const setIndex = sets.findIndex((item) => item.id === button.dataset.check);
+  const set = sets[setIndex];
   if (!set) return;
   set.completed = !set.completed;
-  saveCompletedSet(set);
+  if (set.completed) {
+    saveCompletedSet(set, setIndex);
+  } else {
+    removeCompletedSetLog(set.id);
+  }
   saveData();
   renderAll();
   startRestTimer(Number(els.restSeconds.value));
 }
 
-function saveCompletedSet(set) {
+function saveCompletedSet(set, setIndex) {
   if (!set.completed) return;
   const routine = getActiveRoutine();
   const weight = Number.parseFloat(set.weight);
   const reps = Number.parseInt(set.reps, 10);
   if (!routine || Number.isNaN(weight) || Number.isNaN(reps)) return;
+  removeCompletedSetLog(set.id);
   state.data.logs.push({
     id: crypto.randomUUID(),
+    sourceSetId: set.id,
     routineId: routine.id,
     routineTitle: routine.title,
     category: state.activeCategory,
     exercise: state.selectedExercise,
+    setType: set.type,
+    setOrder: setIndex,
+    rir: set.rir,
     weight,
     reps,
     date: toDateInputValue(new Date()),
     createdAt: new Date().toISOString(),
   });
+}
+
+function removeCompletedSetLog(setId) {
+  state.data.logs = state.data.logs.filter((log) => log.sourceSetId !== setId);
 }
 
 function startRestTimer(seconds) {
@@ -538,7 +560,7 @@ function renderCalendar() {
     );
   }
 
-  const selectedLogs = logsForDate(state.selectedCalendarDate);
+  const selectedLogs = bestLogsForDate(state.selectedCalendarDate);
   els.selectedDayTitle.textContent = formatKoreanDate(state.selectedCalendarDate);
   els.dayLogList.innerHTML = selectedLogs.length
     ? selectedLogs
@@ -568,9 +590,11 @@ function renderProgressOptions() {
 
 function renderProgress() {
   const exercise = els.progressExercise.value || getAllExerciseNames()[0] || "";
-  const logs = state.data.logs
+  const logs = bestLogsByDate(
+    state.data.logs
     .filter((log) => log.exercise === exercise)
-    .sort((a, b) => a.date.localeCompare(b.date));
+    .sort((a, b) => a.date.localeCompare(b.date)),
+  );
   const points = [];
   logs.forEach((log) => {
     const last = points.at(-1);
@@ -645,9 +669,35 @@ function drawChart(points, category) {
 function getCurrentSets() {
   const key = `${state.activeRoutineId}:${state.activeCategory}:${state.selectedExercise}`;
   if (!state.data.activeSets[key]) {
-    state.data.activeSets[key] = defaultPrescription.map((set) => ({ ...set, id: crypto.randomUUID() }));
+    state.data.activeSets[key] = buildInitialSets(state.activeCategory, state.selectedExercise);
   }
   return state.data.activeSets[key];
+}
+
+function buildInitialSets(category, exercise) {
+  const sets = defaultPrescription.map((set) => ({ ...set, id: crypto.randomUUID() }));
+  const previousSets = getLastWorkoutSets(category, exercise);
+  previousSets.slice(0, sets.length).forEach((log, index) => {
+    sets[index].weight = String(log.weight ?? "");
+    sets[index].reps = String(log.reps ?? "");
+  });
+  return sets;
+}
+
+function getLastWorkoutSets(category, exercise) {
+  const logs = state.data.logs
+    .filter((log) => log.category === category && log.exercise === exercise)
+    .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  if (!logs.length) return [];
+
+  const lastDate = logs[0].date;
+  return logs
+    .filter((log) => log.date === lastDate)
+    .sort((a, b) => {
+      const orderA = Number.isFinite(a.setOrder) ? a.setOrder : Number.MAX_SAFE_INTEGER;
+      const orderB = Number.isFinite(b.setOrder) ? b.setOrder : Number.MAX_SAFE_INTEGER;
+      return orderA - orderB || a.createdAt.localeCompare(b.createdAt);
+    });
 }
 
 function openRoutineEditor(routineId) {
@@ -734,9 +784,6 @@ function addInlineExerciseToRoutine() {
 }
 
 function deleteRoutine(routineId) {
-  if (state.data.routines.length <= 1) {
-    return;
-  }
   state.data.routines = state.data.routines.filter((routine) => routine.id !== routineId);
   state.data.logs = state.data.logs.filter((log) => log.routineId !== routineId);
   state.data.sessions = (state.data.sessions ?? []).filter((session) => session.routineId !== routineId);
@@ -746,7 +793,7 @@ function deleteRoutine(routineId) {
     }
   });
   if (state.activeRoutineId === routineId) {
-    state.activeRoutineId = state.data.routines[0].id;
+    state.activeRoutineId = state.data.routines[0]?.id ?? null;
     state.data.selectedRoutineId = state.activeRoutineId;
     state.selectedExercise = null;
   }
@@ -824,21 +871,36 @@ function getEditingRoutine() {
 }
 
 function normalizeData(data) {
-  const routineId = data.routines?.[0]?.id ?? crypto.randomUUID();
   const routines = data.routines?.length
     ? data.routines.map((routine) => ({
         ...routine,
         exerciseItems: routine.exerciseItems ?? defaultRoutineItems(),
       }))
-    : [{ id: routineId, title: "Day 1a", createdAt: new Date().toISOString(), exerciseItems: defaultRoutineItems() }];
+    : [];
+  const selectedRoutineId = routines.some((routine) => routine.id === data.selectedRoutineId)
+    ? data.selectedRoutineId
+    : routines[0]?.id ?? null;
   return {
-    selectedRoutineId: data.selectedRoutineId ?? routines[0].id,
+    selectedRoutineId,
     routines,
     exercises: data.exercises ?? defaultExercises,
     logs: data.logs ?? [],
     sessions: data.sessions ?? [],
-    activeSets: data.activeSets ?? {},
+    activeSets: removeLegacyDefaultActiveSets(data.activeSets ?? {}),
   };
+}
+
+function removeLegacyDefaultActiveSets(activeSets) {
+  return Object.fromEntries(
+    Object.entries(activeSets).filter(([, sets]) => {
+      if (!Array.isArray(sets) || sets.length !== legacyDefaultSets.length) return true;
+      const isLegacyDefault = sets.every((set, index) => {
+        const [weight, reps] = legacyDefaultSets[index];
+        return String(set.weight) === weight && String(set.reps) === reps && !set.completed;
+      });
+      return !isLegacyDefault;
+    }),
+  );
 }
 
 function defaultRoutineItems() {
@@ -851,6 +913,32 @@ function defaultRoutineItems() {
 
 function logsForDate(date) {
   return state.data.logs.filter((log) => log.date === date).sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+}
+
+function bestLogsForDate(date) {
+  const bestByExercise = new Map();
+  logsForDate(date).forEach((log) => {
+    const current = bestByExercise.get(log.exercise);
+    if (!current || compareLogStrength(log, current) > 0) {
+      bestByExercise.set(log.exercise, log);
+    }
+  });
+  return [...bestByExercise.values()].sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+}
+
+function bestLogsByDate(logs) {
+  const bestByDate = new Map();
+  logs.forEach((log) => {
+    const current = bestByDate.get(log.date);
+    if (!current || compareLogStrength(log, current) > 0) {
+      bestByDate.set(log.date, log);
+    }
+  });
+  return [...bestByDate.values()].sort((a, b) => a.date.localeCompare(b.date));
+}
+
+function compareLogStrength(a, b) {
+  return Number(a.weight) - Number(b.weight) || Number(a.reps) - Number(b.reps);
 }
 
 function populateExerciseDialog() {
