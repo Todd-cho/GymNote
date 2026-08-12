@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>짐노트</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="phone-app">
+      <div class="rest-banner hidden" id="restBanner" aria-live="polite">
+        <span>휴식</span>
+        <strong id="restCountdown">01:30</strong>
+        <button id="stopTimerButton" type="button">끝내기</button>
+      </div>
+
+      <section class="screen active" id="homeScreen">
+        <header class="app-header">
+          <div>
+            <p class="muted">오늘 루틴</p>
+            <h1 id="routineName">Day 1a</h1>
+          </div>
+          <label class="rest-setting">
+            쉬는시간
+            <select id="restSeconds">
+              <option value="60">1:00</option>
+              <option value="90" selected>1:30</option>
+              <option value="120">2:00</option>
+              <option value="180">3:00</option>
+            </select>
+          </label>
+        </header>
+
+        <p class="routine-summary" id="todayRoutineSummary">루틴에 추가된 운동만 표시됩니다.</p>
+        <div class="exercise-list" id="exerciseList"></div>
+
+        <button class="finish-workout" id="finishWorkoutButton" type="button">운동 종료</button>
+      </section>
+
+      <section class="screen sheet" id="routineScreen">
+        <header class="app-header">
+          <div>
+            <p class="muted">루틴 관리</p>
+            <h2>오늘 할 루틴</h2>
+          </div>
+        </header>
+
+        <form class="routine-form" id="routineForm">
+          <input id="routineTitle" type="text" placeholder="루틴 제목: Push Day" autocomplete="off" />
+          <button type="submit">추가</button>
+        </form>
+
+        <div class="routine-list" id="routineList"></div>
+
+        <section class="routine-editor hidden" id="routineEditor">
+          <header class="editor-header">
+            <button class="back-small" id="closeRoutineEditor" type="button">‹</button>
+            <div>
+              <p class="muted">루틴 편집</p>
+              <h3 id="editingRoutineTitle">루틴</h3>
+            </div>
+          </header>
+
+          <div class="selected-exercises" id="selectedRoutineExercises"></div>
+          <form class="exercise-add-form" id="inlineExerciseForm">
+            <input id="inlineExerciseName" type="text" placeholder="새 운동 이름" autocomplete="off" />
+            <button type="submit">운동 추가</button>
+          </form>
+          <div class="category-strip" id="routineCategoryStrip"></div>
+          <div class="exercise-list routine-exercise-list" id="routineExercisePicker"></div>
+          <button class="save-routine" id="saveRoutineButton" type="button">저장</button>
+        </section>
+      </section>
+
+      <section class="screen" id="detailScreen">
+        <header class="detail-top">
+          <button class="back-button" id="backButton" type="button" aria-label="뒤로">‹</button>
+          <h2 id="detailRoutineName">Day 1a</h2>
+          <span></span>
+        </header>
+
+        <section class="exercise-hero">
+          <div>
+            <h3 id="detailExerciseName">운동</h3>
+            <span class="done-pill" id="completionPill">0/0 완료</span>
+          </div>
+          <button class="more-button" type="button" aria-label="더 보기">⋮</button>
+        </section>
+
+        <div class="detail-actions">
+          <div class="unit-toggle" aria-label="단위">
+            <button class="active" type="button">kg</button>
+            <button type="button">lbs</button>
+          </div>
+        </div>
+
+        <form class="set-form" id="setForm">
+          <section class="set-section">
+            <h4>웜업 세트</h4>
+            <div class="set-grid-label">
+              <span></span>
+              <span>중량 (kg)</span>
+              <span>횟수</span>
+              <span></span>
+            </div>
+            <div class="set-list" id="warmupSetList"></div>
+          </section>
+
+          <section class="set-section">
+            <div class="previous-row">
+              <h4>탑 세트</h4>
+              <p id="previousTopSet">지난주 탑 세트 <strong>기록 없음</strong></p>
+            </div>
+            <div class="set-grid-label">
+              <span></span>
+              <span>중량 (kg)</span>
+              <span>횟수</span>
+              <span></span>
+            </div>
+            <div class="set-list" id="topSetList"></div>
+          </section>
+
+          <section class="set-section">
+            <h4>본 세트</h4>
+            <div class="set-grid-label">
+              <span></span>
+              <span>중량 (kg)</span>
+              <span>횟수</span>
+              <span></span>
+            </div>
+            <div class="set-list" id="workingSetList"></div>
+          </section>
+
+          <div class="set-actions">
+            <button id="addSetButton" type="button">+ 세트 추가</button>
+            <button id="removeSetButton" type="button">- 세트 삭제</button>
+          </div>
+        </form>
+      </section>
+
+      <nav class="bottom-nav">
+        <button class="active" data-view="home" type="button">기록</button>
+        <button data-view="routine" type="button">루틴</button>
+        <button data-view="calendar" type="button">달력</button>
+        <button data-view="progress" type="button">그래프</button>
+      </nav>
+
+      <section class="screen sheet" id="calendarScreen">
+        <header class="app-header">
+          <div>
+            <p class="muted">월간 기록</p>
+            <h2 id="calendarMonthLabel"></h2>
+          </div>
+          <div class="month-controls">
+            <button id="prevMonth" type="button">‹</button>
+            <button id="nextMonth" type="button">›</button>
+          </div>
+        </header>
+        <div class="calendar-grid" id="calendarGrid"></div>
+        <div class="day-detail">
+          <h3 id="selectedDayTitle">날짜를 선택하세요</h3>
+          <div id="dayLogList"></div>
+        </div>
+      </section>
+
+      <section class="screen sheet" id="progressScreen">
+        <header class="app-header">
+          <div>
+            <p class="muted">종목별 변화</p>
+            <h2>최고 중량 추이</h2>
+          </div>
+          <select id="progressExercise"></select>
+        </header>
+        <canvas id="progressChart" width="760" height="420"></canvas>
+        <p class="progress-summary" id="progressSummary"></p>
+      </section>
+    </div>
+
+    <dialog id="exerciseDialog">
+      <form method="dialog" id="exerciseForm">
+        <h3>종목 추가</h3>
+        <label>
+          부위
+          <select id="newExerciseCategory"></select>
+        </label>
+        <label>
+          운동 이름
+          <input id="newExerciseName" type="text" placeholder="예: 머신 펙덱" autocomplete="off" required />
+        </label>
+        <div class="dialog-actions">
+          <button value="cancel" type="button" id="cancelExercise">취소</button>
+          <button value="confirm" type="submit">추가</button>
+        </div>
+      </form>
+    </dialog>
+
+    <script src="app.js"></script>
+  </body>
+</html>
