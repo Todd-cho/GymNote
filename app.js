@@ -62,6 +62,7 @@ const els = {
   exerciseList: document.querySelector("#exerciseList"),
   finishWorkoutButton: document.querySelector("#finishWorkoutButton"),
   backButton: document.querySelector("#backButton"),
+  exerciseHero: document.querySelector("#exerciseHero"),
   detailRoutineName: document.querySelector("#detailRoutineName"),
   detailExerciseName: document.querySelector("#detailExerciseName"),
   completionPill: document.querySelector("#completionPill"),
@@ -223,6 +224,19 @@ function bindEvents() {
   });
 
   els.backButton.addEventListener("click", () => {
+    showScreen("home");
+    renderHome();
+  });
+
+  els.exerciseHero.addEventListener("click", (event) => {
+    if (event.target.closest(".more-button")) return;
+    showScreen("home");
+    renderHome();
+  });
+
+  els.exerciseHero.addEventListener("keydown", (event) => {
+    if (event.key !== "Enter" && event.key !== " ") return;
+    event.preventDefault();
     showScreen("home");
     renderHome();
   });
@@ -605,7 +619,7 @@ function drawChart(points, category) {
   const xFor = (index) => 54 + (points.length === 1 ? plotWidth / 2 : (plotWidth * index) / (points.length - 1));
   const yFor = (value) => height - 54 - (value / max) * plotHeight;
 
-  ctx.strokeStyle = "#111111";
+  ctx.strokeStyle = "#2f9f63";
   ctx.lineWidth = 5;
   ctx.beginPath();
   points.forEach((point, index) => {
@@ -620,7 +634,7 @@ function drawChart(points, category) {
     const x = xFor(index);
     const y = yFor(point.weight);
     ctx.fillStyle = "#ffffff";
-    ctx.strokeStyle = "#111111";
+    ctx.strokeStyle = "#2f9f63";
     ctx.beginPath();
     ctx.arc(x, y, 8, 0, Math.PI * 2);
     ctx.fill();

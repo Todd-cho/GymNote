@@ -1,17 +1,17 @@
 :root {
   color-scheme: light;
-  --bg: #fafafa;
+  --bg: #f7faf8;
   --panel: #ffffff;
-  --panel-2: #f7f7f7;
-  --field: #f6f6f6;
-  --field-done: #f0f0f0;
-  --line: #e8e8e8;
+  --panel-2: #f5faf7;
+  --field: #f5f7f6;
+  --field-done: #edf8f1;
+  --line: #e1e9e4;
   --ink: #202020;
   --muted: #8b8b8b;
   --soft: #b1b1b1;
-  --accent: #1f1f1f;
-  --accent-soft: #f4f4f4;
-  --blue: #4f8edb;
+  --accent: #2f9f63;
+  --accent-soft: #e8f7ee;
+  --blue: #dff0ff;
   --mint: #dff7e7;
   --pink: #fff1f4;
   --good: #111111;
@@ -25,7 +25,7 @@
 body {
   margin: 0;
   min-height: 100vh;
-  background: var(--bg);
+  background: linear-gradient(180deg, #ffffff 0%, var(--bg) 100%);
   color: var(--ink);
   font-size: 14px;
   font-weight: 500;
@@ -46,16 +46,16 @@ button {
   width: min(100%, 520px);
   min-height: 100vh;
   margin: 0 auto;
-  background: #ffffff;
+  background: rgba(255, 255, 255, 0.96);
   position: relative;
   overflow-x: hidden;
-  padding-bottom: 82px;
+  padding-bottom: 116px;
 }
 
 .screen {
   display: none;
-  min-height: calc(100vh - 82px);
-  padding: 38px 22px 24px;
+  min-height: calc(100vh - 116px);
+  padding: 38px 22px 42px;
 }
 
 .screen.active {
@@ -158,7 +158,7 @@ input {
 .dialog-actions button:last-child {
   border-radius: 8px;
   background: var(--accent-soft);
-  color: var(--ink);
+  color: #287f4f;
   font-weight: 700;
   padding: 10px 14px;
   box-shadow: none;
@@ -194,9 +194,9 @@ input {
 }
 
 .category-button.active {
-  background: #111111;
-  border-color: #111111;
-  color: #ffffff;
+  background: #e4f8eb;
+  border-color: #91dfad;
+  color: #217746;
 }
 
 .exercise-list {
@@ -258,8 +258,8 @@ input {
 }
 
 .routine-card.active {
-  border-color: #111111;
-  background: #ffffff;
+  border-color: #91dfad;
+  background: #fbfffc;
 }
 
 .routine-actions button {
@@ -273,8 +273,8 @@ input {
 
 .routine-actions .choose-action,
 .routine-card.active .routine-actions .choose-action {
-  background: #111111;
-  color: #ffffff;
+  background: #e4f8eb;
+  color: #217746;
 }
 
 .routine-actions .danger-action,
@@ -337,8 +337,8 @@ input {
   width: 100%;
   min-height: 54px;
   margin-top: 6px;
-  background: #111111;
-  color: #ffffff;
+  background: #dff8e8;
+  color: #176b3a;
 }
 
 .routine-editor {
@@ -379,8 +379,8 @@ input {
 .selected-chip {
   border: 1px solid #e5e5e5;
   border-radius: 999px;
-  background: #f7f7f7;
-  color: #303030;
+  background: #e4f8eb;
+  color: #217746;
   padding: 8px 10px;
   font-size: 12px;
   font-weight: 700;
@@ -428,6 +428,12 @@ input {
   border-radius: 8px;
   padding: 14px;
   box-shadow: none;
+  cursor: pointer;
+}
+
+.exercise-hero:focus-visible {
+  outline: 2px solid #91dfad;
+  outline-offset: 3px;
 }
 
 .exercise-hero > div:first-child {
@@ -457,7 +463,7 @@ input {
   gap: 6px;
   padding: 6px;
   border-radius: 999px;
-  background: #e8ede8;
+  background: #e9f2ec;
 }
 
 .unit-toggle button {
@@ -472,7 +478,7 @@ input {
 
 .unit-toggle button.active {
   background: var(--panel);
-  color: #111111;
+  color: #176b3a;
   box-shadow: none;
 }
 
@@ -490,8 +496,8 @@ input {
   display: inline-flex;
   width: fit-content;
   border-radius: 8px;
-  background: #f4f4f4;
-  color: #303030;
+  background: #f4f8f5;
+  color: #2d3b32;
   padding: 8px 13px;
 }
 
@@ -536,9 +542,9 @@ input {
 
 .set-row input {
   min-width: 0;
-  height: 48px;
+  height: 42px;
   text-align: center;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 700;
 }
 
@@ -548,8 +554,8 @@ input {
 }
 
 .check-button {
-  width: 38px;
-  height: 38px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   background: #edf0ee;
   color: #a9b3ac;
@@ -575,19 +581,22 @@ input {
 .bottom-nav {
   position: fixed;
   z-index: 20;
-  bottom: 0;
+  bottom: max(16px, env(safe-area-inset-bottom));
   left: 50%;
   transform: translateX(-50%);
-  width: min(100%, 520px);
+  width: min(calc(100% - 28px), 492px);
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  border-top: 1px solid var(--line);
+  border: 1px solid var(--line);
+  border-radius: 18px;
   background: rgba(255, 255, 255, 0.92);
   backdrop-filter: blur(16px);
+  box-shadow: 0 10px 28px rgba(24, 40, 30, 0.08);
+  overflow: hidden;
 }
 
 .bottom-nav button {
-  min-height: 64px;
+  min-height: 58px;
   background: transparent;
   color: var(--muted);
   font-weight: 700;
@@ -595,7 +604,7 @@ input {
 }
 
 .bottom-nav button.active {
-  color: #111111;
+  color: #217746;
 }
 
 .rest-banner {
@@ -611,9 +620,9 @@ input {
   gap: 12px;
   padding: 12px 14px;
   border-radius: 8px;
-  background: #111111;
+  background: #163d29;
   color: #ffffff;
-  border: 1px solid #111111;
+  border: 1px solid #163d29;
   box-shadow: none;
 }
 
@@ -757,7 +766,7 @@ dialog label {
 
 @media (min-width: 700px) {
   body {
-    background: #fafafa;
+    background: linear-gradient(180deg, #ffffff 0%, #f7faf8 100%);
   }
 
   .phone-app {
@@ -775,7 +784,7 @@ dialog label {
 
   .set-grid-label,
   .set-row {
-    grid-template-columns: 62px minmax(0, 1fr) minmax(0, 1fr) 48px;
+    grid-template-columns: 56px minmax(0, 1fr) minmax(0, 1fr) 42px;
     gap: 9px;
   }
 
