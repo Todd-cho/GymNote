@@ -353,6 +353,23 @@ input {
   gap: 10px;
 }
 
+.routine-title-edit {
+  width: 100%;
+  max-width: 260px;
+  min-height: 38px;
+  padding: 7px 10px;
+  border-color: transparent;
+  background: transparent;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.routine-title-edit:focus {
+  border-color: var(--line);
+  background: var(--field);
+  outline: 0;
+}
+
 .back-small {
   width: 42px;
   height: 42px;

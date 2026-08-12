@@ -273,8 +273,16 @@ function bindEvents() {
   });
 
   els.saveRoutineButton.addEventListener("click", () => {
+    updateEditingRoutineTitle();
     closeRoutineEditor();
     saveData();
+    renderAll();
+  });
+
+  els.editingRoutineTitle.addEventListener("input", () => {
+    updateEditingRoutineTitle();
+    saveData();
+    renderHome();
   });
 
   els.routineCategoryStrip.addEventListener("click", (event) => {
@@ -289,6 +297,7 @@ function bindEvents() {
     if (!button) return;
     toggleExerciseInEditingRoutine(button.dataset.category, button.dataset.routineExercise);
     saveData();
+    renderHome();
     renderRoutineEditor();
   });
 
@@ -297,6 +306,7 @@ function bindEvents() {
     if (!button) return;
     removeExerciseFromEditingRoutine(button.dataset.category, button.dataset.removeExercise);
     saveData();
+    renderHome();
     renderRoutineEditor();
   });
 
@@ -816,12 +826,15 @@ function openRoutineEditor(routineId) {
 function closeRoutineEditor() {
   state.editingRoutineId = null;
   renderRoutines();
+  renderHome();
 }
 
 function renderRoutineEditor() {
   const routine = getEditingRoutine();
   if (!routine) return;
-  els.editingRoutineTitle.textContent = routine.title;
+  if (document.activeElement !== els.editingRoutineTitle) {
+    els.editingRoutineTitle.value = routine.title;
+  }
   const items = routine.exerciseItems ?? [];
   const searchValue = els.inlineExerciseName.value.trim();
   const query = normalizeSearchText(searchValue);
@@ -900,7 +913,16 @@ function addInlineExerciseToRoutine() {
   }
   els.inlineExerciseName.value = "";
   saveData();
+  renderHome();
   renderRoutineEditor();
+}
+
+function updateEditingRoutineTitle() {
+  const routine = getEditingRoutine();
+  if (!routine) return;
+  const title = els.editingRoutineTitle.value.trim();
+  if (!title) return;
+  routine.title = title;
 }
 
 function deleteRoutine(routineId) {
