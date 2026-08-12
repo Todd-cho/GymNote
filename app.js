@@ -1,18 +1,121 @@
 const STORAGE_KEY = "plain-lift-log-v2";
 
 const defaultExercises = {
-  어깨: ["숄더 프레스", "사이드 레터럴 레이즈", "리어 델트 플라이", "업라이트 로우"],
   가슴: [
-    "바벨 벤치 프레스",
-    "인클라인 스미스 머신 벤치 프레스",
+    "딥스",
+    "딥스 머신",
+    "벤치 프레스",
     "스미스 머신 벤치 프레스",
     "덤벨 체스트 플라이",
-    "해머 스트렝스 체스트 프레스 머신",
-    "머신 펙덱 (팔 편 VER)",
+    "머신 펙덱",
+    "머신 체스트 프레스",
+    "케이블 체스트 플라이",
+    "인클라인 스미스 머신 벤치 프레스",
+    "인클라인 바벨 벤치 프레스",
+    "인클라인 덤벨 체스트 프레스",
+    "인클라인 덤벨 체스트 플라이",
+    "디클라인 스미스 벤치 프레스",
+    "인클라인 체스트 플라이 머신",
+    "디클라인 체스트 프레스 머신",
+    "푸시업",
   ],
-  등: ["랫 풀다운", "바벨 로우", "시티드 로우", "풀업"],
-  복근: ["크런치", "레그 레이즈", "케이블 크런치", "플랭크"],
-  하체: ["스쿼트", "레그 프레스", "루마니안 데드리프트", "레그 컬"],
+  등: [
+    "체스트 서포티드 덤벨 로우",
+    "바벨 랙풀",
+    "바벨 로우",
+    "덤벨 로우",
+    "덤벨 슈러그",
+    "바벨 슈러그",
+    "스미스 머신 바벨 슈러그",
+    "시티드 로우",
+    "시티드 로우 (넓은 그립)",
+    "스미스 머신 랙풀",
+    "스미스 머신 바벨 로우",
+    "체스트 서포티드 티바 로우",
+    "체스트 서포티드 머신 로우",
+    "체스트 서포티드 켈소 슈러그",
+    "티바 로우",
+    "로우 로우",
+    "하이 로우",
+    "랫 풀다운 와이드 그립",
+    "랫 풀다운 중간 그립",
+    "랫 풀다운 뉴트럴 그립",
+    "랫 풀다운 언더 그립",
+    "풀업 오버 그립",
+    "풀업 뉴트럴 그립",
+    "친업",
+    "와이드 랫 풀다운 머신",
+    "풀오버",
+    "암 풀다운",
+    "어시스트 풀업",
+  ],
+  어깨: [
+    "덤벨 숄더 프레스",
+    "머신 숄더 프레스",
+    "리버스 펙덱 플라이",
+    "덤벨 레터럴 레이즈",
+    "바벨 프론트 레이즈",
+    "머신 레터럴 레이즈",
+    "시티드 덤벨 레터럴 레이즈",
+    "케이블 레터럴 레이즈",
+    "페이스 풀",
+    "스미스 머신 숄더 프레스",
+    "벤트오버 덤벨 레터럴 레이즈",
+    "스미스 머신 업라이트 로우",
+    "아놀드 프레스",
+    "덤벨 프론트 레이즈",
+    "케이블 프론트 레이즈",
+    "케이블 리버스 플라이",
+    "오버헤드 프레스",
+    "업라이트 로우",
+  ],
+  하체: [
+    "힙 어브덕션",
+    "어브덕션",
+    "싯업",
+    "힙 쓰러스트",
+    "머신 핵스쿼트",
+    "바벨 힙 쓰러스트",
+    "데드리프트",
+    "워킹 런지",
+    "레그 익스텐션",
+    "머신 레그 프레스",
+    "행잉 레그 레이즈",
+    "바벨 스쿼트",
+    "스미스 머신 스쿼트",
+    "브이 스쿼트",
+    "스티프 데드리프트",
+    "덤벨 고블릿 스쿼트",
+    "레그 컬",
+    "백 익스텐션",
+    "리니어 핵스쿼트",
+    "크런치 머신",
+    "카프 레이즈",
+    "불가리안 스플릿 스쿼트",
+  ],
+  "이두/전완": [
+    "해머 바이셉 컬",
+    "이지바 바이셉 컬",
+    "덤벨 바이셉 컬",
+    "바벨 바이셉 컬",
+    "케이블 바이셉 컬",
+    "머신 프리쳐 컬",
+    "바벨 프리쳐 컬",
+    "덤벨 리스트 컬",
+    "바벨 리스트 컬",
+    "덤벨 리버스 리스트 컬",
+    "바벨 리버스 리스트 컬",
+  ],
+  삼두근: [
+    "라잉 바벨 트라이셉 익스텐션",
+    "케이블 트라이셉 익스텐션",
+    "원암 케이블 트라이셉 익스텐션",
+    "시티드 덤벨 트라이셉익스텐션",
+    "원암 케이블 킥 백",
+    "클로즈 그립 벤치 프레스",
+    "케이블 트라이셉 푸시다운",
+    "케이블 오버헤드 트라이셉 익스텐션",
+  ],
 };
 
 const defaultPrescription = [
@@ -134,7 +237,7 @@ function bindEvents() {
       state.data.selectedRoutineId = routine.id;
     }
     state.editingRoutineId = routine.id;
-    state.activeCategory = "어깨";
+    state.activeCategory = "가슴";
     els.routineTitle.value = "";
     saveData();
     renderAll();
@@ -200,6 +303,10 @@ function bindEvents() {
   els.inlineExerciseForm.addEventListener("submit", (event) => {
     event.preventDefault();
     addInlineExerciseToRoutine();
+  });
+
+  els.inlineExerciseName.addEventListener("input", () => {
+    renderRoutineEditor();
   });
 
   els.finishWorkoutButton.addEventListener("click", () => {
@@ -716,6 +823,8 @@ function renderRoutineEditor() {
   if (!routine) return;
   els.editingRoutineTitle.textContent = routine.title;
   const items = routine.exerciseItems ?? [];
+  const searchValue = els.inlineExerciseName.value.trim();
+  const query = normalizeSearchText(searchValue);
   els.selectedRoutineExercises.innerHTML = items.length
     ? items
         .map(
@@ -735,10 +844,16 @@ function renderRoutineEditor() {
     )
     .join("");
 
-  els.routineExercisePicker.innerHTML = state.data.exercises[state.activeCategory]
-    .map((exercise) => {
-      const isSelected = items.some((item) => item.category === state.activeCategory && item.exercise === exercise);
-      return `
+  const exercises = state.data.exercises[state.activeCategory] ?? [];
+  const filteredExercises = query
+    ? exercises.filter((exercise) => normalizeSearchText(exercise).includes(query))
+    : exercises;
+
+  els.routineExercisePicker.innerHTML = filteredExercises.length
+    ? filteredExercises
+        .map((exercise) => {
+          const isSelected = items.some((item) => item.category === state.activeCategory && item.exercise === exercise);
+          return `
         <button class="exercise-button${isSelected ? " selected" : ""}" data-category="${escapeAttr(state.activeCategory)}" data-routine-exercise="${escapeAttr(exercise)}" type="button">
           <span>
             <strong>${escapeHtml(exercise)}</strong>
@@ -747,8 +862,9 @@ function renderRoutineEditor() {
           <span class="arrow">${isSelected ? "✓" : "+"}</span>
         </button>
       `;
-    })
-    .join("");
+        })
+        .join("")
+    : `<div class="empty-list">${escapeHtml(searchValue)} 검색 결과가 없습니다. 운동 추가를 누르면 새 운동으로 추가됩니다.</div>`;
 }
 
 function toggleExerciseInEditingRoutine(category, exercise) {
@@ -767,15 +883,19 @@ function addInlineExerciseToRoutine() {
   const name = els.inlineExerciseName.value.trim();
   if (!name) return;
   state.data.exercises[state.activeCategory] = state.data.exercises[state.activeCategory] ?? [];
-  if (!state.data.exercises[state.activeCategory].includes(name)) {
-    state.data.exercises[state.activeCategory].push(name);
+  const existingExercise = findExerciseByName(state.activeCategory, name);
+  const exerciseName = existingExercise ?? name;
+  if (!existingExercise) {
+    state.data.exercises[state.activeCategory].push(exerciseName);
   }
   const routine = getEditingRoutine();
   if (routine) {
     routine.exerciseItems = routine.exerciseItems ?? [];
-    const exists = routine.exerciseItems.some((item) => item.category === state.activeCategory && item.exercise === name);
+    const exists = routine.exerciseItems.some(
+      (item) => item.category === state.activeCategory && isSameExerciseName(item.exercise, exerciseName),
+    );
     if (!exists) {
-      routine.exerciseItems.push({ category: state.activeCategory, exercise: name });
+      routine.exerciseItems.push({ category: state.activeCategory, exercise: exerciseName });
     }
   }
   els.inlineExerciseName.value = "";
@@ -883,7 +1003,7 @@ function normalizeData(data) {
   return {
     selectedRoutineId,
     routines,
-    exercises: data.exercises ?? defaultExercises,
+    exercises: mergeExerciseCatalog(data.exercises),
     logs: data.logs ?? [],
     sessions: data.sessions ?? [],
     activeSets: removeLegacyDefaultActiveSets(data.activeSets ?? {}),
@@ -901,6 +1021,34 @@ function removeLegacyDefaultActiveSets(activeSets) {
       return !isLegacyDefault;
     }),
   );
+}
+
+function mergeExerciseCatalog(savedExercises = {}) {
+  const merged = {};
+  Object.entries(defaultExercises).forEach(([category, exercises]) => {
+    merged[category] = [...exercises];
+  });
+  Object.entries(savedExercises ?? {}).forEach(([category, exercises]) => {
+    merged[category] = merged[category] ?? [];
+    (exercises ?? []).forEach((exercise) => {
+      if (!merged[category].some((item) => isSameExerciseName(item, exercise))) {
+        merged[category].push(exercise);
+      }
+    });
+  });
+  return merged;
+}
+
+function findExerciseByName(category, name) {
+  return (state.data.exercises[category] ?? []).find((exercise) => isSameExerciseName(exercise, name));
+}
+
+function isSameExerciseName(a, b) {
+  return normalizeSearchText(a) === normalizeSearchText(b);
+}
+
+function normalizeSearchText(value) {
+  return String(value).replace(/\s/g, "").toLowerCase();
 }
 
 function defaultRoutineItems() {
