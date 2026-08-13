@@ -119,11 +119,11 @@ const defaultExercises = {
 };
 
 const defaultPrescription = [
-  { type: "warmup", rir: "6 RIR", weight: "", reps: "", completed: false },
-  { type: "warmup", rir: "5 RIR", weight: "", reps: "", completed: false },
-  { type: "top", rir: "1 RIR", weight: "", reps: "", completed: false },
-  { type: "working", rir: "1 RIR", weight: "", reps: "", completed: false },
-  { type: "working", rir: "1 RIR", weight: "", reps: "", completed: false },
+  { type: "warmup", rir: "6 RIR", weight: "", reps: "", note: "", completed: false },
+  { type: "warmup", rir: "5 RIR", weight: "", reps: "", note: "", completed: false },
+  { type: "top", rir: "1 RIR", weight: "", reps: "", note: "", completed: false },
+  { type: "working", rir: "1 RIR", weight: "", reps: "", note: "", completed: false },
+  { type: "working", rir: "1 RIR", weight: "", reps: "", note: "", completed: false },
 ];
 
 const legacyDefaultSets = [
@@ -144,6 +144,9 @@ const state = {
   selectedCalendarDate: toDateInputValue(new Date()),
   timerId: null,
   timerRemaining: 0,
+  timerEndAt: null,
+  draggedExerciseIndex: null,
+  pointerDragIndex: null,
 };
 
 const els = {
@@ -151,6 +154,7 @@ const els = {
   restCountdown: document.querySelector("#restCountdown"),
   stopTimerButton: document.querySelector("#stopTimerButton"),
   restSeconds: document.querySelector("#restSeconds"),
+  detailRestSeconds: document.querySelector("#detailRestSeconds"),
   homeScreen: document.querySelector("#homeScreen"),
   routineScreen: document.querySelector("#routineScreen"),
   detailScreen: document.querySelector("#detailScreen"),
@@ -221,6 +225,7 @@ function saveData() {
 
 function init() {
   state.activeRoutineId = state.data.selectedRoutineId ?? state.data.routines[0]?.id ?? null;
+  populateRestSelects();
   renderAll();
   bindEvents();
 }
@@ -324,6 +329,7 @@ function bindEvents() {
   });
 
   els.exerciseList.addEventListener("click", (event) => {
+    if (event.target.closest(".drag-handle")) return;
     const button = event.target.closest("button[data-exercise]");
     if (!button) return;
     state.selectedExercise = button.dataset.exercise;
@@ -331,6 +337,15 @@ function bindEvents() {
     showScreen("detail");
     renderDetail();
   });
+
+  els.exerciseList.addEventListener("dragstart", handleExerciseDragStart);
+  els.exerciseList.addEventListener("dragover", handleExerciseDragOver);
+  els.exerciseList.addEventListener("drop", handleExerciseDrop);
+  els.exerciseList.addEventListener("dragend", clearExerciseDrag);
+  els.exerciseList.addEventListener("pointerdown", handleExercisePointerDown);
+  els.exerciseList.addEventListener("pointercancel", clearExercisePointerDrag);
+  document.addEventListener("pointermove", handleExercisePointerMove);
+  document.addEventListener("pointerup", handleExercisePointerUp);
 
   els.backButton.addEventListener("click", () => {
     showScreen("home");
@@ -364,6 +379,7 @@ function bindEvents() {
       rir: "1 RIR",
       weight: "",
       reps: "",
+      note: "",
       completed: false,
     });
     saveData();
@@ -405,6 +421,9 @@ function bindEvents() {
 
   els.progressExercise.addEventListener("change", renderProgress);
   els.stopTimerButton.addEventListener("click", stopRestTimer);
+  els.restSeconds.addEventListener("change", syncRestSeconds);
+  els.detailRestSeconds.addEventListener("change", syncRestSeconds);
+  document.addEventListener("visibilitychange", updateTimerText);
 
   els.cancelExercise.addEventListener("click", () => els.exerciseDialog.close());
 
@@ -451,17 +470,86 @@ function renderHome() {
         .map((item) => {
           const best = getBestForExercise(item.category, item.exercise);
           return `
-        <button class="exercise-button" data-category="${escapeAttr(item.category)}" data-exercise="${escapeAttr(item.exercise)}" type="button">
+        <button class="exercise-button" draggable="true" data-index="${items.indexOf(item)}" data-category="${escapeAttr(item.category)}" data-exercise="${escapeAttr(item.exercise)}" type="button">
           <span>
             <strong>${escapeHtml(item.exercise)}</strong>
             <span>${escapeHtml(item.category)} · ${best ? `최고 ${best.weight}kg / ${best.reps}회` : "아직 기록 없음"}</span>
           </span>
-          <span class="arrow">›</span>
+          <span class="drag-handle" aria-label="순서 변경">☰</span>
         </button>
       `;
         })
         .join("")
     : `<div class="empty-list">${routine ? "아직 이 루틴에 담긴 운동이 없습니다." : "아직 만든 루틴이 없습니다."}</div>`;
+}
+
+function handleExerciseDragStart(event) {
+  const button = event.target.closest("[data-index]");
+  if (!button) return;
+  state.draggedExerciseIndex = Number(button.dataset.index);
+  event.dataTransfer.effectAllowed = "move";
+  event.dataTransfer.setData("text/plain", button.dataset.index);
+}
+
+function handleExerciseDragOver(event) {
+  if (state.draggedExerciseIndex === null) return;
+  event.preventDefault();
+  event.dataTransfer.dropEffect = "move";
+}
+
+function handleExerciseDrop(event) {
+  event.preventDefault();
+  const target = event.target.closest("[data-index]");
+  if (!target) return;
+  reorderActiveRoutineExercise(state.draggedExerciseIndex, Number(target.dataset.index));
+  clearExerciseDrag();
+}
+
+function clearExerciseDrag() {
+  state.draggedExerciseIndex = null;
+}
+
+function handleExercisePointerDown(event) {
+  const handle = event.target.closest(".drag-handle");
+  if (!handle) return;
+  const button = handle.closest("[data-index]");
+  if (!button) return;
+  state.pointerDragIndex = Number(button.dataset.index);
+  event.preventDefault();
+}
+
+function handleExercisePointerMove(event) {
+  if (state.pointerDragIndex === null) return;
+  const target = document.elementFromPoint(event.clientX, event.clientY)?.closest("[data-index]");
+  if (!target) return;
+  const targetIndex = Number(target.dataset.index);
+  if (targetIndex === state.pointerDragIndex) return;
+  reorderActiveRoutineExercise(state.pointerDragIndex, targetIndex);
+  state.pointerDragIndex = targetIndex;
+}
+
+function handleExercisePointerUp(event) {
+  if (state.pointerDragIndex === null) return;
+  const target = event.target.closest("[data-index]");
+  if (target) {
+    reorderActiveRoutineExercise(state.pointerDragIndex, Number(target.dataset.index));
+  }
+  clearExercisePointerDrag();
+}
+
+function clearExercisePointerDrag() {
+  state.pointerDragIndex = null;
+}
+
+function reorderActiveRoutineExercise(fromIndex, toIndex) {
+  if (fromIndex === toIndex || fromIndex === null || Number.isNaN(fromIndex) || Number.isNaN(toIndex)) return;
+  const routine = getActiveRoutine();
+  const items = routine?.exerciseItems ?? [];
+  if (!items[fromIndex] || !items[toIndex]) return;
+  const [item] = items.splice(fromIndex, 1);
+  items.splice(toIndex, 0, item);
+  saveData();
+  renderHome();
 }
 
 function renderRoutines() {
@@ -536,10 +624,13 @@ function renderSetGroup(container, sets, type) {
     .map(
       (set) => `
         <div class="set-row${set.completed ? " completed" : ""}" data-set-id="${set.id}">
-          <span class="rir">${escapeHtml(set.rir)}</span>
-          <input data-field="weight" inputmode="decimal" value="${escapeAttr(set.weight)}" placeholder="" />
-          <input data-field="reps" inputmode="numeric" value="${escapeAttr(set.reps)}" placeholder="${repsPlaceholder}" />
-          <button class="check-button" data-check="${set.id}" type="button" aria-label="세트 완료">✓</button>
+          <div class="set-main-line">
+            <span class="rir">${escapeHtml(set.rir)}</span>
+            <label><input data-field="weight" inputmode="decimal" value="${escapeAttr(set.weight)}" placeholder="" /><span>kg</span></label>
+            <label><input data-field="reps" inputmode="numeric" value="${escapeAttr(set.reps)}" placeholder="${repsPlaceholder}" /><span>회</span></label>
+            <button class="check-button" data-check="${set.id}" type="button" aria-label="세트 완료">✓</button>
+          </div>
+          <input class="set-note" data-field="note" type="text" value="${escapeAttr(set.note ?? "")}" placeholder="세트 메모" />
         </div>
       `,
     )
@@ -566,12 +657,12 @@ function handleSetClick(event) {
   set.completed = !set.completed;
   if (set.completed) {
     saveCompletedSet(set, setIndex);
+    startRestTimer(Number(els.restSeconds.value));
   } else {
     removeCompletedSetLog(set.id);
   }
   saveData();
   renderAll();
-  startRestTimer(Number(els.restSeconds.value));
 }
 
 function saveCompletedSet(set, setIndex) {
@@ -591,6 +682,7 @@ function saveCompletedSet(set, setIndex) {
     setType: set.type,
     setOrder: setIndex,
     rir: set.rir,
+    note: set.note ?? "",
     weight,
     reps,
     date: toDateInputValue(new Date()),
@@ -603,12 +695,16 @@ function removeCompletedSetLog(setId) {
 }
 
 function startRestTimer(seconds) {
+  if (seconds <= 0) {
+    stopRestTimer();
+    return;
+  }
   state.timerRemaining = seconds;
+  state.timerEndAt = Date.now() + seconds * 1000;
   els.restBanner.classList.remove("hidden");
   updateTimerText();
   clearInterval(state.timerId);
   state.timerId = setInterval(() => {
-    state.timerRemaining -= 1;
     updateTimerText();
     if (state.timerRemaining <= 0) {
       stopRestTimer();
@@ -620,10 +716,14 @@ function stopRestTimer() {
   clearInterval(state.timerId);
   state.timerId = null;
   state.timerRemaining = 0;
+  state.timerEndAt = null;
   els.restBanner.classList.add("hidden");
 }
 
 function updateTimerText() {
+  if (state.timerEndAt) {
+    state.timerRemaining = Math.max(0, Math.ceil((state.timerEndAt - Date.now()) / 1000));
+  }
   els.restCountdown.textContent = formatTimer(Math.max(0, state.timerRemaining));
 }
 
@@ -797,6 +897,7 @@ function buildInitialSets(category, exercise) {
   previousSets.slice(0, sets.length).forEach((log, index) => {
     sets[index].weight = String(log.weight ?? "");
     sets[index].reps = String(log.reps ?? "");
+    sets[index].note = String(log.note ?? "");
   });
   return sets;
 }
@@ -1109,6 +1210,23 @@ function bestLogsByDate(logs) {
 
 function compareLogStrength(a, b) {
   return Number(a.weight) - Number(b.weight) || Number(a.reps) - Number(b.reps);
+}
+
+function populateRestSelects() {
+  const options = [];
+  for (let seconds = 0; seconds <= 120; seconds += 15) {
+    options.push(`<option value="${seconds}">${formatTimer(seconds)}</option>`);
+  }
+  [els.restSeconds, els.detailRestSeconds].forEach((select) => {
+    select.innerHTML = options.join("");
+    select.value = "90";
+  });
+}
+
+function syncRestSeconds(event) {
+  const value = event.target.value;
+  els.restSeconds.value = value;
+  els.detailRestSeconds.value = value;
 }
 
 function populateExerciseDialog() {

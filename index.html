@@ -29,12 +29,7 @@
           </div>
           <label class="rest-setting">
             쉬는시간
-            <select id="restSeconds">
-              <option value="60">1:00</option>
-              <option value="90" selected>1:30</option>
-              <option value="120">2:00</option>
-              <option value="180">3:00</option>
-            </select>
+            <select id="restSeconds"></select>
           </label>
         </header>
 
@@ -95,6 +90,10 @@
         </section>
 
         <div class="detail-actions">
+          <label class="rest-setting detail-rest-setting">
+            쉬는시간
+            <select id="detailRestSeconds"></select>
+          </label>
           <div class="unit-toggle" aria-label="단위">
             <button class="active" type="button">kg</button>
             <button type="button">lbs</button>
@@ -107,12 +106,6 @@
               <h4>웜업 세트</h4>
               <p>워밍업보단 높은 무게 추천</p>
             </div>
-            <div class="set-grid-label">
-              <span></span>
-              <span>중량 (kg)</span>
-              <span>횟수</span>
-              <span></span>
-            </div>
             <div class="set-list" id="warmupSetList"></div>
           </section>
 
@@ -121,12 +114,6 @@
               <h4>탑 세트</h4>
               <p id="previousTopSet">지난주 탑 세트 <strong>기록 없음</strong></p>
             </div>
-            <div class="set-grid-label">
-              <span></span>
-              <span>중량 (kg)</span>
-              <span>횟수</span>
-              <span></span>
-            </div>
             <div class="set-list" id="topSetList"></div>
           </section>
 
@@ -134,12 +121,6 @@
             <div class="set-heading">
               <h4>본 세트</h4>
               <p>탑 세트보다 낮은 중량, 고반복 추천</p>
-            </div>
-            <div class="set-grid-label">
-              <span></span>
-              <span>중량 (kg)</span>
-              <span>횟수</span>
-              <span></span>
             </div>
             <div class="set-list" id="workingSetList"></div>
           </section>

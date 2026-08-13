@@ -471,8 +471,12 @@ input {
 }
 
 .detail-actions {
-  justify-content: flex-end;
+  justify-content: space-between;
   margin-bottom: 28px;
+}
+
+.detail-rest-setting {
+  min-width: 110px;
 }
 
 .unit-toggle {
@@ -549,22 +553,34 @@ input {
   color: var(--ink);
 }
 
-.set-grid-label,
 .set-row {
   display: grid;
-  grid-template-columns: 64px minmax(0, 1fr) minmax(0, 1fr) 48px;
+  gap: 8px;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #eef2ef;
+}
+
+.set-row:last-child {
+  border-bottom: 0;
+}
+
+.set-main-line {
+  display: grid;
+  grid-template-columns: 58px minmax(0, 1fr) minmax(0, 1fr) 40px;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
-.set-grid-label {
-  font-size: 13px;
-  text-align: center;
-  margin-bottom: -4px;
-}
-
-.set-row {
-  margin-bottom: 12px;
+.set-main-line label {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 3px;
+  min-width: 0;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
 }
 
 .rir {
@@ -574,10 +590,15 @@ input {
 
 .set-row input {
   min-width: 0;
-  height: 42px;
+  height: 34px;
   text-align: center;
   font-size: 16px;
   font-weight: 700;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
+  background: transparent;
+  padding: 4px 2px;
 }
 
 .set-row input::placeholder {
@@ -586,8 +607,16 @@ input {
 }
 
 .set-row.completed input {
-  background: var(--field-done);
+  background: transparent;
   color: var(--ink);
+}
+
+.set-note {
+  width: 100%;
+  text-align: left !important;
+  color: #59615c;
+  font-size: 13px !important;
+  font-weight: 600 !important;
 }
 
 .check-button {
@@ -603,6 +632,22 @@ input {
 .set-row.completed .check-button {
   background: #111111;
   color: #ffffff;
+}
+
+.drag-handle {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  color: #a4aca7 !important;
+  font-size: 18px !important;
+  touch-action: none;
+  cursor: grab;
+}
+
+.exercise-button:active .drag-handle {
+  cursor: grabbing;
 }
 
 .set-actions {
@@ -819,9 +864,8 @@ dialog label {
     padding-right: 18px;
   }
 
-  .set-grid-label,
-  .set-row {
-    grid-template-columns: 56px minmax(0, 1fr) minmax(0, 1fr) 42px;
+  .set-main-line {
+    grid-template-columns: 52px minmax(0, 1fr) minmax(0, 1fr) 38px;
     gap: 9px;
   }
 
