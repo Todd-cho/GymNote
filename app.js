@@ -471,11 +471,10 @@ function renderHome() {
         .map((item, index) => {
           const best = getBestForExercise(item.category, item.exercise);
           const dragIndex = state.pointerDragIndex ?? state.draggedExerciseIndex;
-          const isDragging = dragIndex === index;
-          const isDropTarget = state.dropTargetExerciseIndex === index && dragIndex !== null && !isDragging;
-          const isDimmed = dragIndex !== null && !isDragging && !isDropTarget;
+          const isDropTarget = state.dropTargetExerciseIndex === index && dragIndex !== null;
+          const isDimmed = dragIndex !== null && !isDropTarget;
           return `
-        <button class="exercise-button${isDragging ? " dragging" : ""}${isDropTarget ? " drop-target" : ""}${isDimmed ? " dimmed" : ""}" draggable="true" data-index="${index}" data-category="${escapeAttr(item.category)}" data-exercise="${escapeAttr(item.exercise)}" type="button">
+        <button class="exercise-button${isDropTarget ? " drop-target" : ""}${isDimmed ? " dimmed" : ""}" draggable="true" data-index="${index}" data-category="${escapeAttr(item.category)}" data-exercise="${escapeAttr(item.exercise)}" type="button">
           <span>
             <strong>${escapeHtml(item.exercise)}</strong>
             <span>${escapeHtml(item.category)} · ${best ? `최고 ${best.weight}kg / ${best.reps}회` : "아직 기록 없음"}</span>
@@ -537,10 +536,11 @@ function handleExercisePointerMove(event) {
   const target = document.elementFromPoint(event.clientX, event.clientY)?.closest("[data-index]");
   if (!target) return;
   const targetIndex = Number(target.dataset.index);
-  updateDropTarget(targetIndex);
   if (targetIndex === state.pointerDragIndex) return;
-  reorderActiveRoutineExercise(state.pointerDragIndex, targetIndex);
+  reorderActiveRoutineExercise(state.pointerDragIndex, targetIndex, false);
   state.pointerDragIndex = targetIndex;
+  state.dropTargetExerciseIndex = targetIndex;
+  renderHome();
 }
 
 function handleExercisePointerUp(event) {
@@ -564,7 +564,7 @@ function updateDropTarget(index) {
   renderHome();
 }
 
-function reorderActiveRoutineExercise(fromIndex, toIndex) {
+function reorderActiveRoutineExercise(fromIndex, toIndex, shouldRender = true) {
   if (fromIndex === toIndex || fromIndex === null || Number.isNaN(fromIndex) || Number.isNaN(toIndex)) return;
   const routine = getActiveRoutine();
   const items = routine?.exerciseItems ?? [];
@@ -572,7 +572,7 @@ function reorderActiveRoutineExercise(fromIndex, toIndex) {
   const [item] = items.splice(fromIndex, 1);
   items.splice(toIndex, 0, item);
   saveData();
-  renderHome();
+  if (shouldRender) renderHome();
 }
 
 function renderRoutines() {
