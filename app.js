@@ -147,6 +147,7 @@ const state = {
   timerEndAt: null,
   draggedExerciseIndex: null,
   pointerDragIndex: null,
+  dropTargetExerciseIndex: null,
 };
 
 const els = {
@@ -467,10 +468,14 @@ function renderHome() {
 
   els.exerciseList.innerHTML = items.length
     ? items
-        .map((item) => {
+        .map((item, index) => {
           const best = getBestForExercise(item.category, item.exercise);
+          const dragIndex = state.pointerDragIndex ?? state.draggedExerciseIndex;
+          const isDragging = dragIndex === index;
+          const isDropTarget = state.dropTargetExerciseIndex === index && dragIndex !== null && !isDragging;
+          const isDimmed = dragIndex !== null && !isDragging && !isDropTarget;
           return `
-        <button class="exercise-button" draggable="true" data-index="${items.indexOf(item)}" data-category="${escapeAttr(item.category)}" data-exercise="${escapeAttr(item.exercise)}" type="button">
+        <button class="exercise-button${isDragging ? " dragging" : ""}${isDropTarget ? " drop-target" : ""}${isDimmed ? " dimmed" : ""}" draggable="true" data-index="${index}" data-category="${escapeAttr(item.category)}" data-exercise="${escapeAttr(item.exercise)}" type="button">
           <span>
             <strong>${escapeHtml(item.exercise)}</strong>
             <span>${escapeHtml(item.category)} · ${best ? `최고 ${best.weight}kg / ${best.reps}회` : "아직 기록 없음"}</span>
@@ -487,6 +492,8 @@ function handleExerciseDragStart(event) {
   const button = event.target.closest("[data-index]");
   if (!button) return;
   state.draggedExerciseIndex = Number(button.dataset.index);
+  state.dropTargetExerciseIndex = state.draggedExerciseIndex;
+  renderHome();
   event.dataTransfer.effectAllowed = "move";
   event.dataTransfer.setData("text/plain", button.dataset.index);
 }
@@ -495,6 +502,9 @@ function handleExerciseDragOver(event) {
   if (state.draggedExerciseIndex === null) return;
   event.preventDefault();
   event.dataTransfer.dropEffect = "move";
+  const target = event.target.closest("[data-index]");
+  if (!target) return;
+  updateDropTarget(Number(target.dataset.index));
 }
 
 function handleExerciseDrop(event) {
@@ -507,6 +517,8 @@ function handleExerciseDrop(event) {
 
 function clearExerciseDrag() {
   state.draggedExerciseIndex = null;
+  state.dropTargetExerciseIndex = null;
+  renderHome();
 }
 
 function handleExercisePointerDown(event) {
@@ -515,6 +527,8 @@ function handleExercisePointerDown(event) {
   const button = handle.closest("[data-index]");
   if (!button) return;
   state.pointerDragIndex = Number(button.dataset.index);
+  state.dropTargetExerciseIndex = state.pointerDragIndex;
+  renderHome();
   event.preventDefault();
 }
 
@@ -523,6 +537,7 @@ function handleExercisePointerMove(event) {
   const target = document.elementFromPoint(event.clientX, event.clientY)?.closest("[data-index]");
   if (!target) return;
   const targetIndex = Number(target.dataset.index);
+  updateDropTarget(targetIndex);
   if (targetIndex === state.pointerDragIndex) return;
   reorderActiveRoutineExercise(state.pointerDragIndex, targetIndex);
   state.pointerDragIndex = targetIndex;
@@ -539,6 +554,14 @@ function handleExercisePointerUp(event) {
 
 function clearExercisePointerDrag() {
   state.pointerDragIndex = null;
+  state.dropTargetExerciseIndex = null;
+  renderHome();
+}
+
+function updateDropTarget(index) {
+  if (state.dropTargetExerciseIndex === index) return;
+  state.dropTargetExerciseIndex = index;
+  renderHome();
 }
 
 function reorderActiveRoutineExercise(fromIndex, toIndex) {

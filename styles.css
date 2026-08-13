@@ -295,6 +295,7 @@ input {
   background: transparent;
   color: var(--ink);
   text-align: left;
+  transition: opacity 140ms ease, background 140ms ease, box-shadow 140ms ease, transform 140ms ease;
 }
 
 .exercise-button:last-child {
@@ -303,6 +304,25 @@ input {
 
 .exercise-button.selected {
   background: #fafafa;
+}
+
+.exercise-button.dragging {
+  position: relative;
+  z-index: 2;
+  background: #f4fff7;
+  box-shadow: inset 0 0 0 2px #44c76f;
+  transform: scale(1.01);
+  opacity: 1;
+}
+
+.exercise-button.drop-target {
+  background: #edf9f1;
+  box-shadow: inset 0 0 0 2px #91dfad;
+  opacity: 1;
+}
+
+.exercise-button.dimmed {
+  opacity: 0.34;
 }
 
 .exercise-button strong {
