@@ -615,7 +615,9 @@ function renderDetail() {
     els.detailRoutineName.textContent = routine?.title ?? "루틴 없음";
     els.detailExerciseName.textContent = "운동 없음";
     els.completionPill.textContent = "0/0 완료";
-    els.previousTopSet.innerHTML = "지난주 탑 세트 <strong>기록 없음</strong>";
+    if (els.previousTopSet) {
+      els.previousTopSet.innerHTML = "지난주 탑 세트 <strong>기록 없음</strong>";
+    }
     renderSetGroup(els.warmupSetList, [], "warmup");
     renderSetGroup(els.topSetList, [], "top");
     renderSetGroup(els.workingSetList, [], "working");
@@ -632,9 +634,11 @@ function renderDetail() {
   els.completionPill.textContent = `${completed}/${sets.length} 완료`;
 
   const previous = getPreviousTopSet(state.activeCategory, activeItem.exercise);
-  els.previousTopSet.innerHTML = previous
-    ? `지난주 탑 세트 <span>중량 <strong>${previous.weight}kg</strong></span><span>횟수 <strong>${previous.reps}회</strong></span>`
-    : "지난주 탑 세트 <strong>기록 없음</strong>";
+  if (els.previousTopSet) {
+    els.previousTopSet.innerHTML = previous
+      ? `지난주 탑 세트 <span>중량 <strong>${previous.weight}kg</strong></span><span>횟수 <strong>${previous.reps}회</strong></span>`
+      : "지난주 탑 세트 <strong>기록 없음</strong>";
+  }
 
   renderSetGroup(els.warmupSetList, sets.filter((set) => set.type === "warmup"), "warmup");
   renderSetGroup(els.topSetList, sets.filter((set) => set.type === "top"), "top");
